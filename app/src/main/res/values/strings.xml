@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Sun_Daniel_FinalProject</string>
+    <string name="my_map_api_key">AIzaSyCBIjQLuicKkkKzRWercvTeykKyJACyhMU</string>
+
+    <string-array name="car_makes_array">
+        <item>All</item>
+        <item>Ford</item>
+        <item>Chevrolet</item>
+        <item>Toyota</item>
+        <item>Honda</item>
+        <item>Nissan</item>
+        <item>BMW</item>
+        <item>Mercedes-Benz</item>
+        <item>Audi</item>
+        <item>Volkswagen</item>
+        <item>Subaru</item>
+        <item>Hyundai</item>
+        <item>Kia</item>
+        <item>Mazda</item>
+    </string-array>
+</resources>

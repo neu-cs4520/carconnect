@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "225959996027",
+    "project_id": "cs4520-final-project-9f264",
+    "storage_bucket": "cs4520-final-project-9f264.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:225959996027:android:dc8f90c18a3ea58df750de",
+        "android_client_info": {
+          "package_name": "com.example.sun_daniel_finalproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdjPnKfNZt53IbfdszEYMi22UNsRDICTE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
