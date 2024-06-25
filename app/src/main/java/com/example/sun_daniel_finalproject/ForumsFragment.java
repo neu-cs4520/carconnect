@@ -18,7 +18,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -33,6 +35,7 @@ public class ForumsFragment extends Fragment {
     private List<Thread> threadList;
     private FirebaseFirestore db;
     private ExtendedFloatingActionButton addThreadFab;
+    FirebaseAuth mAuth;
 
     @Nullable
     @Override
@@ -52,10 +55,11 @@ public class ForumsFragment extends Fragment {
         carMakeSpinner.setAdapter(adapter);
 
         threadList = new ArrayList<>();
-        threadAdapter = new ThreadAdapter(threadList, getActivity());
+        threadAdapter = new ThreadAdapter(threadList);
         threadsRecyclerView.setAdapter(threadAdapter);
 
         db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
 
         loadThreads("All");
 
@@ -118,8 +122,8 @@ public class ForumsFragment extends Fragment {
             String content = threadContentInput.getText().toString().trim();
 
             if (!title.isEmpty() && !carMake.isEmpty() && !content.isEmpty()) {
-                Thread thread = new Thread(title, carMake, content, 0);
-                saveThreadToFirestore(thread);
+                Thread thread = new Thread(title, content, mAuth.getUid(), carMake);
+                addThreadToDatabase(thread);
             } else {
                 Toast.makeText(getContext(), "Please fill all fields", Toast.LENGTH_SHORT).show();
             }
@@ -131,16 +135,19 @@ public class ForumsFragment extends Fragment {
         dialog.show();
     }
 
-    private void saveThreadToFirestore(Thread thread) {
-        CollectionReference threadsRef = db.collection("threads");
-        threadsRef.add(thread)
-                .addOnSuccessListener(documentReference -> {
+    private void addThreadToDatabase(Thread thread) {
+        DocumentReference newThreadRef = db.collection("threads").document();
+        String threadId = newThreadRef.getId();
+        thread.setThreadId(threadId);
+
+        newThreadRef.set(thread)
+                .addOnSuccessListener(aVoid -> {
                     threadList.add(thread);
                     threadAdapter.notifyDataSetChanged();
-                    Toast.makeText(getContext(), "Post added", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Thread added successfully", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Failed to add post", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Failed to add thread: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 }

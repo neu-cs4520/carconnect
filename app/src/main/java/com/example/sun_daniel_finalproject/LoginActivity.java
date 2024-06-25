@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.sun_daniel_finalproject.onboarding.OnboardingActivity;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -65,6 +66,9 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         Toast.makeText(this, "Registration Successful", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(this, OnboardingActivity.class);
+                        startActivity(intent);
+                        finish();
                     } else {
                         Toast.makeText(this, "Registration Failed", Toast.LENGTH_SHORT).show();
                     }

@@ -17,16 +17,23 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback {
     private MapView mapView;
     private GoogleMap googleMap;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    private FirebaseFirestore db;
 
     @Nullable
     @Override
@@ -35,6 +42,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         mapView = view.findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
+
+        db = FirebaseFirestore.getInstance();
+
         return view;
     }
 
@@ -52,6 +62,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         } else {
             requestLocationPermission();
         }
+
+        loadEventMarkers();
     }
 
     private void requestLocationPermission() {
@@ -86,5 +98,25 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 Toast.makeText(requireContext(), "Location permission denied", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private void loadEventMarkers() {
+        db.collection("events").get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<LatLng> eventLocations = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Event event = document.toObject(Event.class);
+                        if (event.getLatitude(getContext()) != null && event.getLongitude(getContext()) != null) {
+                            LatLng location = new LatLng(event.getLatitude(getContext()), event.getLongitude(getContext()));
+                            eventLocations.add(location);
+                            googleMap.addMarker(new MarkerOptions().position(location).title(event.getTitle()));
+                        }
+                    }
+                    if (!eventLocations.isEmpty()) {
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(0, 0), 1.0f));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                });
     }
 }

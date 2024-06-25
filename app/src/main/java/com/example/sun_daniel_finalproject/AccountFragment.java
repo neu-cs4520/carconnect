@@ -2,12 +2,15 @@ package com.example.sun_daniel_finalproject;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,9 +29,10 @@ import java.util.List;
 
 public class AccountFragment extends Fragment {
 
-    private TextView usernameText;
+    private TextView usernameText, interestsText;
     private RecyclerView recyclerViewCars;
-    private Button addCarButton;
+    private Button addCarButton, signOutButton;
+    private Button settingsButton;
     private CarsAdapter carsAdapter;
     private List<Car> carList;
     FirebaseAuth mAuth;
@@ -42,6 +46,8 @@ public class AccountFragment extends Fragment {
         usernameText = view.findViewById(R.id.username_text);
         recyclerViewCars = view.findViewById(R.id.recycler_view_cars);
         addCarButton = view.findViewById(R.id.add_car_button);
+        interestsText = view.findViewById(R.id.interests_list);
+        settingsButton = view.findViewById(R.id.settings_button);
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
@@ -61,6 +67,13 @@ public class AccountFragment extends Fragment {
         addCarButton.setOnClickListener(v -> {
             // Add logic to add a new car using CarAPI
             showAddCarDialog();
+        });
+
+        settingsButton.setOnClickListener(v -> {
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new SettingsFragment())
+                    .addToBackStack(null)
+                    .commit();
         });
 
         return view;
@@ -124,6 +137,7 @@ public class AccountFragment extends Fragment {
                             usernameText.setText(account.getUsername());
                             // Load cars if any
                             loadUserCars(userId);
+                            loadUserInterests(userId);
                         }
                     } else {
                         // If no account data exists, create a new account
@@ -147,6 +161,28 @@ public class AccountFragment extends Fragment {
                 });
     }
 
+    private void loadUserInterests(String userId) {
+        DocumentReference userDocRef = db.collection("users").document(userId);
+        userDocRef.get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        List<String> interests = (List<String>) documentSnapshot.get("interests");
+                        if (interests != null && !interests.isEmpty()) {
+                            String interestsString = String.join(", ", interests);
+                            interestsText.setText("interestsString");
+                        } else {
+                            interestsText.setText("None");
+                        }
+                    } else {
+                        interestsText.setText("None");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed to load interests", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+
     private void loadUserCars(String userId) {
         db.collection("users").document(userId).collection("cars")
                 .whereEqualTo("ownerId", userId)
@@ -160,4 +196,6 @@ public class AccountFragment extends Fragment {
                     Toast.makeText(getContext(), "Failed to load cars", Toast.LENGTH_SHORT).show();
                 });
     }
+
+
 }

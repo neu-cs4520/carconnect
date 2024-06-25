@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.sun_daniel_finalproject"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -48,4 +48,6 @@ dependencies {
     implementation(libs.material)
     implementation(libs.google.firebase.analytics)
     implementation(libs.firebase.firestore);
+    implementation("com.google.firebase:firebase-messaging:24.0.0")
+    implementation("androidx.work:work-runtime:2.9.0")
 }

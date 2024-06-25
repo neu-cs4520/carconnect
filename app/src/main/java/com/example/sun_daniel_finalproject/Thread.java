@@ -1,20 +1,35 @@
 package com.example.sun_daniel_finalproject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Thread {
 
+    private String threadId;
     private String title;
     private String carMake;
     private String content;
+    private String authorId;
     private int likes;
 
     // default constructor for firestore
     public Thread() {}
 
-    public Thread(String title, String carMake, String content, int likes) {
+    public Thread(String title, String content, String authorId, String carMake) {
+        this.threadId = threadId;
         this.title = title;
-        this.carMake = carMake;
         this.content = content;
-        this.likes = likes;
+        this.authorId = authorId;
+        this.carMake = carMake;
+        this.likes = 0;
+    }
+
+    public String getThreadId() {
+        return threadId;
+    }
+
+    public void setThreadId(String threadId) {
+        this.threadId = threadId;
     }
 
     public String getTitle() {
@@ -47,5 +62,13 @@ public class Thread {
 
     public void setLikes(int likes) {
         this.likes = likes;
+    }
+
+    public void addLike() {
+        this.likes++;
+    }
+
+    public String getAuthor() {
+        return this.authorId;
     }
 }

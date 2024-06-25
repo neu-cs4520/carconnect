@@ -1,10 +1,14 @@
 package com.example.sun_daniel_finalproject;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -58,6 +62,7 @@ public class MarketItemDetailsFragment extends Fragment {
         TextView descriptionTextView = view.findViewById(R.id.item_description);
         TextView sellerNameTextView = view.findViewById(R.id.seller_name);
         TextView sellerContactTextView = view.findViewById(R.id.seller_contact);
+        Button emailSellerButton = view.findViewById(R.id.button_email_seller);
 
         nameTextView.setText(name);
         priceTextView.setText("$" + price);
@@ -65,6 +70,21 @@ public class MarketItemDetailsFragment extends Fragment {
         sellerNameTextView.setText(sellerName);
         sellerContactTextView.setText(sellerContact);
 
+        emailSellerButton.setOnClickListener(v -> {
+            if (sellerContact != null && !sellerContact.isEmpty()) {
+                sendEmailToSeller(sellerContact);
+            } else {
+                Toast.makeText(getContext(), "Seller email not available", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         return view;
+    }
+
+    private void sendEmailToSeller(String email) {
+        Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
+                "mailto", email, null));
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Inquiry about your item");
+        startActivity(Intent.createChooser(emailIntent, "Send email..."));
     }
 }

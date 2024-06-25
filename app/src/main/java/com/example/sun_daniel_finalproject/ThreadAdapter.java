@@ -1,5 +1,6 @@
 package com.example.sun_daniel_finalproject;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,11 +15,9 @@ import java.util.List;
 public class ThreadAdapter extends RecyclerView.Adapter<ThreadAdapter.ThreadViewHolder> {
 
     private List<Thread> threadList;
-    private FragmentActivity fragmentActivity;
 
-    public ThreadAdapter(List<Thread> threadList, FragmentActivity fragmentActivity) {
+    public ThreadAdapter(List<Thread> threadList) {
         this.threadList = threadList;
-        this.fragmentActivity = fragmentActivity;
     }
 
     @NonNull
@@ -30,21 +29,19 @@ public class ThreadAdapter extends RecyclerView.Adapter<ThreadAdapter.ThreadView
 
     @Override
     public void onBindViewHolder(@NonNull ThreadViewHolder holder, int position) {
-        Thread currentThread = threadList.get(position);
-        holder.titleTextView.setText(currentThread.getTitle());
-        holder.contentTextView.setText(currentThread.getContent());
-        holder.likesTextView.setText(String.valueOf(currentThread.getLikes()));
-
+        Thread thread = threadList.get(position);
+        holder.titleTextView.setText(thread.getTitle());
+        holder.contentTextView.setText(thread.getContent());
         holder.itemView.setOnClickListener(v -> {
-            ThreadDetailsFragment detailsFragment = ThreadDetailsFragment.newInstance(
-                    currentThread.getTitle(),
-                    currentThread.getContent(),
-                    currentThread.getLikes());
-
-            fragmentActivity.getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, detailsFragment)
-                    .addToBackStack(null)
-                    .commit();
+            Context context = holder.itemView.getContext();
+            if (context instanceof FragmentActivity) {
+                FragmentActivity activity = (FragmentActivity) context;
+                ThreadDetailsFragment threadDetailsFragment = ThreadDetailsFragment.newInstance(thread.getThreadId());
+                activity.getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, threadDetailsFragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
         });
     }
 
@@ -53,17 +50,13 @@ public class ThreadAdapter extends RecyclerView.Adapter<ThreadAdapter.ThreadView
         return threadList.size();
     }
 
-    public static class ThreadViewHolder extends RecyclerView.ViewHolder {
-
-        public TextView titleTextView;
-        public TextView contentTextView;
-        public TextView likesTextView;
+    static class ThreadViewHolder extends RecyclerView.ViewHolder {
+        TextView titleTextView, contentTextView;
 
         public ThreadViewHolder(@NonNull View itemView) {
             super(itemView);
             titleTextView = itemView.findViewById(R.id.thread_title);
             contentTextView = itemView.findViewById(R.id.thread_content);
-            likesTextView = itemView.findViewById(R.id.thread_likes);
         }
     }
 }

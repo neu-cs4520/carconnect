@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,22 +16,28 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 public class EventsFragment extends Fragment {
 
-    private RecyclerView recyclerView;
-    private EventAdapter eventAdapter;
+    private MaterialButtonToggleGroup toggleButtonGroup;
+    private RecyclerView recyclerView, calendarRecyclerView;
+    private View calendarViewContainer;
+    private EventAdapter eventAdapter, calendarEventsAdapter;
+    private DatePicker datePicker;
     private List<Event> eventList;
     private FirebaseFirestore db;
     private ExtendedFloatingActionButton addEventFab;
@@ -40,19 +47,53 @@ public class EventsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_events, container, false);
 
+        toggleButtonGroup = view.findViewById(R.id.toggle_button_group);
+        calendarViewContainer = view.findViewById(R.id.calendar_view_container);
+        calendarRecyclerView = view.findViewById(R.id.calendar_recycler_view);
         recyclerView = view.findViewById(R.id.recycler_view_events);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        datePicker = view.findViewById(R.id.date_picker);
 
         addEventFab = view.findViewById(R.id.add_event_fab);
         addEventFab.setOnClickListener(v -> showAddEventDialog());
 
         eventList = new ArrayList<>();
         eventAdapter = new EventAdapter(eventList, getActivity());
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(eventAdapter);
 
+        calendarEventsAdapter = new EventAdapter(new ArrayList<>(), getActivity());
+        calendarRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        calendarRecyclerView.setAdapter(calendarEventsAdapter);
+
+        toggleButtonGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (isChecked) {
+                if (checkedId == R.id.list_view_button) {
+                    recyclerView.setVisibility(View.VISIBLE);
+                    calendarViewContainer.setVisibility(View.GONE);
+                } else if (checkedId == R.id.calendar_view_button) {
+                    recyclerView.setVisibility(View.GONE);
+                    calendarViewContainer.setVisibility(View.VISIBLE);
+                }
+            }
+        });
         db = FirebaseFirestore.getInstance();
 
         loadEvents();
+
+        datePicker.setOnDateChangedListener((view1, year, monthOfYear, dayOfMonth) -> {
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(year, monthOfYear, dayOfMonth);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            String selectedDate = sdf.format(calendar.getTime());
+            loadEventsForDate(selectedDate);
+        });
+
+        // Load events for today's date by default
+        Calendar today = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String todayDate = sdf.format(today.getTime());
+        loadEventsForDate(todayDate);
 
         return view;
     }
@@ -71,6 +112,23 @@ public class EventsFragment extends Fragment {
                 // Handle the error
             }
         });
+    }
+
+    private void loadEventsForDate(String date) {
+        db.collection("events")
+                .whereEqualTo("date", date)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Event> eventsForDate = new ArrayList<>();
+                    for (DocumentSnapshot document : queryDocumentSnapshots) {
+                        Event event = document.toObject(Event.class);
+                        eventsForDate.add(event);
+                    }
+                    calendarEventsAdapter.updateEvents(eventsForDate);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed to load events for the selected date", Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void showAddEventDialog() {

@@ -71,4 +71,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             descriptionTextView = itemView.findViewById(R.id.event_description);
         }
     }
+
+    public void updateEvents(List<Event> newEventList) {
+        this.eventList = newEventList;
+        notifyDataSetChanged();
+    }
 }
