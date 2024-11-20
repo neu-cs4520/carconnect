@@ -1,7 +1,5 @@
 # CarConnect App
 By: Daniel Sun  
-NUID: 02149445  
-Email: sun.daniel@northeastern.edu
 
 ## Features
 - **Login**: User authentication using Firebase email authentication.
@@ -31,7 +29,7 @@ Email: sun.daniel@northeastern.edu
     - Navigate to the directory where you want to clone the repository.
     - Run the following command:
       ```sh
-      git clone https://github.com/neu-cs4520/final-project-groups4finalproject21.git
+      git clone https://github.com/danielyhsun/carconnect.git
       ```
     
 2. **Open the project in Android Studio**:
